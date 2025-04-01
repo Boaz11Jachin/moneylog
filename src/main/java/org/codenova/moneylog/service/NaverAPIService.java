@@ -55,7 +55,7 @@ public class NaverAPIService {
 
         ResponseEntity<String> response =
                 restTemplate.exchange("https://openapi.naver.com/v1/nid/me",
-                HttpMethod.GET, new HttpEntity<>(body, headers),
+                HttpMethod.GET, new HttpEntity<>(body, headers), //GET이라고?
                 String.class);
 
         //log.info("profile = {}", response.getBody());
