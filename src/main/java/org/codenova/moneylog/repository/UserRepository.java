@@ -8,7 +8,7 @@ import org.codenova.moneylog.entity.User;
 @Mapper
 public interface UserRepository {
 
-    public int create (User user);
+    public int save (User user);
     public User findByEmail(String email);
     public User findByProviderAndProviderId(@Param("provider") String provider,
                                             @Param("providerId") String providerId);
