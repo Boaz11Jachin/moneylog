@@ -4,20 +4,32 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.codenova.moneylog.entity.User;
+import org.codenova.moneylog.entity.Verification;
 import org.codenova.moneylog.repository.UserRepository;
+import org.codenova.moneylog.repository.VerificationRepository;
+import org.codenova.moneylog.request.FindPasswordRequest;
 import org.codenova.moneylog.request.LoginRequest;
 import org.codenova.moneylog.service.KakaoAPIService;
+import org.codenova.moneylog.service.MailService;
 import org.codenova.moneylog.service.NaverAPIService;
 import org.codenova.moneylog.vo.KakaoTokenResponse;
 import org.codenova.moneylog.vo.NaverProfileResponse;
 import org.codenova.moneylog.vo.NaverTokenResponse;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
+
+import java.time.LocalDateTime;
+import java.util.Optional;
+import java.util.UUID;
+
+import static java.time.LocalTime.now;
 
 
 @Slf4j
@@ -28,8 +40,10 @@ public class AuthController {
 
     private KakaoAPIService kakaoAPIService;
     private NaverAPIService naverAPIService;
+    private MailService mailService;
 
     private UserRepository userRepository;
+    private VerificationRepository verificationRepository;
 
     @GetMapping("/login")
     public String loginHandel(Model model){
@@ -73,9 +87,87 @@ public class AuthController {
             user.setProvider("LOCAL");
             user.setVerified("F");
             userRepository.save(user);
+            mailService.sendWelcomeHtmlMessage(user);
         }
         return "redirect:/index";
     }
+
+    @GetMapping("/find-password")
+    public String findPasswordHandle(Model model){
+
+        return "auth/find-password";
+    }
+
+    @PostMapping("/find-password")
+    public String findPasswordPostHandle(@ModelAttribute @Valid FindPasswordRequest req,
+                                         BindingResult result,
+                                         Model model){
+        if(result.hasErrors()){
+            model.addAttribute("error", "이메일 형식이 아닙니다.");
+            return "auth/find-password-error";
+        }
+
+        User found = userRepository.findByEmail(req.getEmail());
+        if(found == null){
+            model.addAttribute("error", "등록되지 않은 이메일 입니다.");
+            return "auth/find-password-error";
+        }
+
+        String temporalPassword = UUID.randomUUID().toString().substring(0, 8);
+        userRepository.updatePasswordByEmail(req.getEmail(), temporalPassword);
+        mailService.sendTemporalPasswordMessage(req.getEmail(), temporalPassword);
+
+
+
+        return "auth/find-password-success";
+    }
+
+
+    @GetMapping("/verify")
+    public String verificationHandle(@SessionAttribute("user") User user){
+
+        String token = UUID.randomUUID().toString().replace("-","");
+        Verification v = Verification.builder().token(token).userEmail(user.getEmail())
+                        .expiresAt(LocalDateTime.now().plusHours(24)).build();
+        verificationRepository.create(v);
+
+
+
+        mailService.sendVerificationMessage(user, v);
+
+        return "auth/verification";
+    }
+
+    @GetMapping("/verification")
+    public String verificationPostHandle(@RequestParam("token") String token,
+                                         Model model){
+
+        Verification found = verificationRepository.findByToken(token);
+
+        if(found == null){
+            model.addAttribute("result", "유효하지 않은 토큰입니다.");
+        }else if(found.getExpiresAt().isBefore(LocalDateTime.now()) ){
+            model.addAttribute("result", "유효기간이 만료되었습니다.");
+        }else if(found.getExpiresAt().isAfter(LocalDateTime.now()) ){
+            userRepository.updateVerifiedByEmail(found.getUserEmail());
+            model.addAttribute("result", "인증이 완료되었습니다.");
+        }
+
+
+        return "auth/verification";
+
+    }
+
+
+
+
+
+
+
+
+
+
+
 
     @GetMapping("/naver/callback")
     public String naverCallbackHandle(@RequestParam("code") String code,
