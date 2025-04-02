@@ -95,6 +95,18 @@ public class AuthController {
         log.info("profileResponse nickname = {}", profileResponse.getNickname());
         log.info("profileResponse profileImage = {}", profileResponse.getProfileImage());
 
+        User found = userRepository.findByProviderAndProviderId("NAVER", profileResponse.getId());
+        if(found != null){
+            session.setAttribute("user", found);
+        }else{
+            User user = User.builder().provider("NAVER").providerId(profileResponse.getId())
+                    .nickname(profileResponse.getNickname())
+                    .picture(profileResponse.getProfileImage()).verified("T").build();
+            userRepository.save(user);
+            session.setAttribute("user", user);
+        }
+
+
         return "redirect:/index";
     }
 
