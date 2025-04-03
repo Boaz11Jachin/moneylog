@@ -96,7 +96,7 @@ public class MailService {
             mailSender.send(message);
 
         }catch(Exception e){
-            log.error("error = {}", e);
+            log.error("error = {}", e.getMessage());
             return false;
         }
         return true;
