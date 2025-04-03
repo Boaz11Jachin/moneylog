@@ -123,41 +123,48 @@ public class AuthController {
     }
 
 
-    @GetMapping("/verify")
-    public String verificationHandle(@SessionAttribute("user") User user){
 
+    @GetMapping("/send-token")
+    public String sendTokenHandle(@SessionAttribute("user") User user,
+                                  Model model) {
         String token = UUID.randomUUID().toString().replace("-","");
-        Verification v = Verification.builder().token(token).userEmail(user.getEmail())
-                        .expiresAt(LocalDateTime.now().plusHours(24)).build();
-        verificationRepository.create(v);
+        Verification one = Verification.builder()
+                .token(token)
+                .expiresAt(LocalDateTime.now().plusDays(1))
+                .userEmail(user.getEmail())
+                .build();
+        verificationRepository.create(one);
+        mailService.sendVerificationMessage(user, one);
+        // 어디다가 보내야하는지와 생성된 토큰번호를 넘겨줘야함.
 
+        return "auth/send-token";
 
-
-        mailService.sendVerificationMessage(user, v);
-
-        return "auth/verification";
     }
 
-    @GetMapping("/verification")
-    public String verificationPostHandle(@RequestParam("token") String token,
-                                         Model model){
-
+    @GetMapping("/email-verify")
+    public String emailVerifyHandle(@RequestParam("token") String token, Model model,
+                                    @SessionAttribute("user") User user,
+                                    HttpSession session) {
         Verification found = verificationRepository.findByToken(token);
-
-        if(found == null){
-            model.addAttribute("result", "유효하지 않은 토큰입니다.");
-        }else if(found.getExpiresAt().isBefore(LocalDateTime.now()) ){
-            model.addAttribute("result", "유효기간이 만료되었습니다.");
-        }else if(found.getExpiresAt().isAfter(LocalDateTime.now()) ){
-            userRepository.updateVerifiedByEmail(found.getUserEmail());
-            model.addAttribute("result", "인증이 완료되었습니다.");
+        if (found == null) {
+            model.addAttribute("error", "유효하지 않은 인증토큰 입니다.");
+            return "auth/email-verify-error";
+        }
+        // found.getExpiresAt();   // 토큰이 가진 유효만료시점
+        // LocalDateTime.now();    // 인증 시점
+        if (LocalDateTime.now().isAfter(found.getExpiresAt())) {
+            model.addAttribute("error", "유효기간이 만료된 인증토큰 입니다.");
+            return "auth/email-verify-error";
         }
 
+        String userEmail = found.getUserEmail();
+        userRepository.updateVerifiedByEmail(userEmail);
+        user.setVerified("T");
+        session.setAttribute("user", user);
 
-        return "auth/verification";
 
+        return "auth/email-verify-success";
     }
-
 
 
 

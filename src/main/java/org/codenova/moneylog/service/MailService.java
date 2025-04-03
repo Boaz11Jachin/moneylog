@@ -80,26 +80,26 @@ public class MailService {
     }
 
     public boolean sendVerificationMessage(User user, Verification verification) {
-        MimeMessage message = mailSender.createMimeMessage();
+        SimpleMailMessage message = new SimpleMailMessage();
 
+        message.setTo(user.getEmail());
+        message.setSubject("[코드노바] 머니로그 이메일 인증");
+        String text = "안녕하세요, " + user.getNickname()+"님\n";
+        text += "이메일 인증 토큰을 보내드립니다. 토큰값 = "  + verification.getToken()+"\n";
+        text += "인증 토큰 유효기간은 " + verification.getExpiresAt() +" 까지 입니다.\n\n";
+        text += "인증링크 :  http://192.168.10.61:8080/auth/email-verify?token="+verification.getToken();
+        text += "\n\n";
+        text += "팀 코드노바";
+
+        message.setText(text);
+        boolean result =true;
         try {
-            MimeMessageHelper messageHelper = new MimeMessageHelper(message, "utf-8");
-            messageHelper.setTo(user.getEmail());
-            messageHelper.setSubject("[코드노바] 인증확인 메일입니다.");
-
-            String html = "<h2>안녕하세요, 머니로그입니다.</h2>";
-            html += "<p><a href='http://192.168.10.61:8080/auth/verification?token="+ verification.getToken() +"'>머니로그</a>인증확인 메일입니다.</p>";
-            html += "<p>앞으로 다양한 컨텐츠와 서비스를 제공해드리겠습니다.</p>";
-            html += "<p><span style='color : gray'>팀 코드노바 올림</span></p>";
-            messageHelper.setText(html , true);
-
             mailSender.send(message);
-
-        }catch(Exception e){
+        } catch (Exception e) {
             log.error("error = {}", e.getMessage());
-            return false;
+            result = false;
         }
-        return true;
+        return result;
     }
 
 }

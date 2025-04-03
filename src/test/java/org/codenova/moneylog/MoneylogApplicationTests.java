@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @SpringBootTest
 class MoneylogApplicationTests {
@@ -30,4 +31,15 @@ class MoneylogApplicationTests {
         System.out.println(t3.isAfter(t2)); // true
         System.out.println(t1.isAfter(t3)); // false
     }
+
+    @Test
+    void uuidTest() {
+        String uuid = UUID.randomUUID().toString();
+        System.out.println(uuid);
+        System.out.println(uuid.replaceAll("-", ""));
+
+    }
+
+
+
 }
