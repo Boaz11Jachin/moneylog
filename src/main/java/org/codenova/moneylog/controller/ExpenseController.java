@@ -51,6 +51,13 @@ public class ExpenseController {
 
 
         model.addAttribute("expenses", expenseRepository.findWithCategoryByUserId(user.getId()));
+        model.addAttribute("expenses2", expenseRepository.findByUserIdAndDuration(user.getId(), LocalDate.now().minusDays(10), LocalDate.now()));
+
+        LocalDate today = LocalDate.now();
+        LocalDate firstDay = today.minusDays(today.getDayOfMonth()-1);
+        LocalDate lastDay = today.plusMonths(1).minusDays(today.getDayOfMonth());
+
+
 
         return "expense/history";
     }

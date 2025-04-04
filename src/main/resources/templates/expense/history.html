@@ -22,9 +22,24 @@
         }
     </style>
 </head>
-<body style=" margin: 30px;">
+<body style="margin: 0;  background-color: #f9f9f9;">
 
-<!--
+<!-- 상단 바 -->
+<div style="display: flex; justify-content: space-between; align-items: center; padding: 20px; background-color: #ffffff; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+    <h2 style="margin: 0;">머니로그</h2>
+    <div style="display: inline-flex; align-items: center; gap: 6px;">
+        <div style="font-weight: bold;">윤형호</div>
+        <div style="font-size: 12px; color: #888;">
+            <span style="display: inline-block; font-size: 11px; color: #888; background-color: #f7f7f7; padding: 2px 6px; border-radius: 6px;">
+                로컬 / 미인증
+            </span>
+        </div>
+    </div>
+</div>
+
+
+
+
 <div style="max-width: 1020px; margin: auto">
     <form method="get" action="/expense/history"
           style="margin-bottom: 30px; display: flex; justify-content: center;
@@ -45,7 +60,9 @@
             검색
         </button>
     </form>
--->
+
+
+
 
     <!-- 📋 지출 내역 테이블 -->
     <table style="border-collapse: collapse; width: 100%; margin-bottom: 30px;">

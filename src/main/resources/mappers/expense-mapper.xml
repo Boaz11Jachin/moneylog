@@ -26,5 +26,26 @@
         order by expense_date asc, id asc
     </select>
 
+    <select id="getTotalAmountByPeriod" resultType="long">
+        select ifnull(sum(amount), 0) as total from expenses
+        where user_id = #{userId}
+        and expense_date between #{startDate} and #{endDate};
+    </select>
+
+    <select id="getTop3ExpensesByPeriod" resultType="expenseWithCategory">
+    select  e.*, c.name as category_name from expenses e join categorys c
+    on e.category_id = c.id
+    where user_id= #{userId} and expense_date between #{startDate} and #{endDate}
+    order by amount desc limit 3;
+    </select>
+
+    <select id="getCategoryExpenseByPeriod" resultType="expenseWithCategoryAndTotal">
+        select e.*, c.name as category_name, sum(amount) as total from expenses e join categorys c
+        on e.category_id = c.id
+        where user_id=#{userId} and expense_date between #{startDate} and #{endDate}
+        group by category_id
+        order by total desc
+    </select>
+
 
 </mapper>
