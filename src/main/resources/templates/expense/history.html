@@ -62,38 +62,16 @@
         </tr>
         </thead>
         <tbody>
-        <tr>
-            <td style="padding: 8px; border: 1px solid #ccc;text-align: center">
-                <input type="checkbox"/></td>
-            <td style="padding: 8px; border: 1px solid #ccc;">2025-04-01</td>
-            <td style="padding: 8px; border: 1px solid #ccc;">점심 식사</td>
-            <td style="padding: 8px; border: 1px solid #ccc;">9,000</td>
-            <td style="padding: 8px; border: 1px solid #ccc;">식비</td>
-        </tr>
-        <tr>
-            <td style="padding: 8px; border: 1px solid #ccc;text-align: center">
-                <input type="checkbox"/></td>
-            <td style="padding: 8px; border: 1px solid #ccc;">2025-04-02</td>
-            <td style="padding: 8px; border: 1px solid #ccc;">지하철 탑승</td>
-            <td style="padding: 8px; border: 1px solid #ccc;">1,450</td>
-            <td style="padding: 8px; border: 1px solid #ccc;">교통</td>
 
-        </tr>
-        <tr>
+        <tr th:each="one : ${expenses}">
             <td style="padding: 8px; border: 1px solid #ccc;text-align: center">
                 <input type="checkbox"/></td>
-            <td style="padding: 8px; border: 1px solid #ccc;">2025-04-03</td>
-            <td style="padding: 8px; border: 1px solid #ccc;">티셔츠 구매</td>
-            <td style="padding: 8px; border: 1px solid #ccc;">25,000</td>
-            <td style="padding: 8px; border: 1px solid #ccc;">쇼핑</td>
-        </tr>
-        <tr th:each="one : ${expenseWithCategories}">
-            <td style="padding: 8px; border: 1px solid #ccc;text-align: center">
-                <input type="checkbox"/></td>
-            <td style="padding: 8px; border: 1px solid #ccc;" th:datetime-local="${one.getExpenseDate()}">2025-04-03</td>
+            <td style="padding: 8px; border: 1px solid #ccc;" th:text="${one.getExpenseDate()}">2025-04-03</td>
             <td style="padding: 8px; border: 1px solid #ccc;" th:text="${one.getDescription()}">티셔츠 구매</td>
-            <td style="padding: 8px; border: 1px solid #ccc;" th:text="${one.getAmount()}">25,000</td>
+            <td style="padding: 8px; border: 1px solid #ccc;" th:text="${#numbers.formatInteger(one.getAmount(), 1, 'COMMA')}">25,000</td>
             <td style="padding: 8px; border: 1px solid #ccc;" th:text="${one.categoryName}">쇼핑</td>
+            <!-- 강사님은 <td style="padding: 8px; border: 1px solid #ccc;">
+                    <span th:text="${one.expenseDate}"></span> 이렇게했음 -->
         </tr>
         </tbody>
     </table>

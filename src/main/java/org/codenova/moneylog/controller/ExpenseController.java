@@ -49,7 +49,8 @@ public class ExpenseController {
 //
 //        model.addAttribute("expenseWithCategories", expenseWithCategories);
 
-        expenseRepository.findByUserId(user.getId());
+
+        model.addAttribute("expenses", expenseRepository.findWithCategoryByUserId(user.getId()));
 
         return "expense/history";
     }
