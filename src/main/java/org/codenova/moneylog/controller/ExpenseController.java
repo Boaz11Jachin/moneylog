@@ -6,6 +6,8 @@ import org.codenova.moneylog.entity.User;
 import org.codenova.moneylog.query.ExpenseWithCategory;
 import org.codenova.moneylog.repository.CategoryRepository;
 import org.codenova.moneylog.repository.ExpenseRepository;
+import org.codenova.moneylog.request.SearchPeriodRequest;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -20,12 +22,14 @@ import java.util.List;
 @RequestMapping("/expense")
 public class ExpenseController {
 
+
     private CategoryRepository categoryRepository;
     private ExpenseRepository expenseRepository;
 
     @GetMapping("/history")
     public String historyHandle(Model model,
-                                @SessionAttribute("user") User user) {
+                                @SessionAttribute("user") User user,
+                                @ModelAttribute SearchPeriodRequest searchPeriodRequest) {
 
         model.addAttribute("categorys", categoryRepository.findAll());
         model.addAttribute("now" , LocalDate.now());
@@ -50,13 +54,26 @@ public class ExpenseController {
 //        model.addAttribute("expenseWithCategories", expenseWithCategories);
 
 
-        model.addAttribute("expenses", expenseRepository.findWithCategoryByUserId(user.getId()));
-        model.addAttribute("expenses2", expenseRepository.findByUserIdAndDuration(user.getId(), LocalDate.now().minusDays(10), LocalDate.now()));
+        //model.addAttribute("expenses", expenseRepository.findWithCategoryByUserId(user.getId()));
+        //model.addAttribute("expenses2", expenseRepository.findByUserIdAndDuration(user.getId(), LocalDate.now().minusDays(10), LocalDate.now()));
 
         LocalDate today = LocalDate.now();
-        LocalDate firstDay = today.minusDays(today.getDayOfMonth()-1);
-        LocalDate lastDay = today.plusMonths(1).minusDays(today.getDayOfMonth());
 
+        LocalDate startDate;
+        LocalDate endDate;
+        if(searchPeriodRequest.getStartDate() != null && searchPeriodRequest.getEndDate() != null) {
+            startDate = searchPeriodRequest.getStartDate();
+            endDate = searchPeriodRequest.getEndDate();
+        } else {
+            today = LocalDate.now();
+            startDate = today.minusDays(today.getDayOfMonth()-1);
+            endDate= startDate.plusMonths(1).minusDays(1);
+        }
+
+
+        model.addAttribute("expenses", expenseRepository.findByUserIdAndDuration(user.getId(), startDate, endDate));
+        model.addAttribute("startDate", startDate);
+        model.addAttribute("endDate", endDate);
 
 
         return "expense/history";
